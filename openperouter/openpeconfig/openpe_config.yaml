@@ -1,19 +1,17 @@
 l3vnis:
   - vrf: red
     vni: 100
-l2vnis:
-  - vni: 210
-    vrf: red
-    hostmaster:
-      type: linux-bridge
-      linuxBridge:
-        name: br0
+    hostsession:
+      asn: 64514
+      hostasn: 64515
+      localcidr:
+        ipv4: 192.169.10.0/24
 underlays:
   - asn: 64514
     evpn:
       vtepcidr: 100.65.0.0/24
     nics:
-      - eth0
+      - enp3s0
     neighbors:
       - asn: 64512
-        address: 192.168.111.1
+        address: 192.168.150.1
