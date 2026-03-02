@@ -80,7 +80,6 @@ add_file "${CONFIG_DIR}/node-config.yaml"                 "/var/lib/openperouter
 add_file "${CONFIG_DIR}/openpe_config.yaml"               "/var/lib/openperouter/configs/openpe_config.yaml"       420
 
 # OVN bridge mapping - tells OVN to use br0 for br-ex
-add_file "${CONFIG_DIR}/default_bridge"                     "/etc/ovnk/default_bridge"                                 420
 
 # Generate the MachineConfig YAML
 cat > "${OUTPUT}" <<'HEADER'
