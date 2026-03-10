@@ -59,3 +59,4 @@ export APPLIANCE_ADDITIONAL_IMAGES="quay.io/fpaoline/router:dev3"
 export EXTRA_MANIFESTS_PATH="${SCRIPTDIR}/ocp/${CLUSTER_NAME}/openshift"
 # Patch config-image to enable virtual interfaces in assisted-service inventory
 export POST_CONFIG_IMAGE_HOOK="${SCRIPTDIR}/openperouter/patch_configimage.sh"
+export POST_APPLIANCE_HOOK="${SCRIPTDIR}/openperouter/patch_bootimage.sh"

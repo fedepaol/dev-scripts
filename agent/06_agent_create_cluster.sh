@@ -633,6 +633,13 @@ case "${AGENT_E2E_TEST_BOOT_MODE}" in
     # Build disk image using openshift-appliance
     create_appliance ${asset_dir}
 
+    # Run post-appliance hooks if present
+    POST_APPLIANCE_HOOK="${POST_APPLIANCE_HOOK:-}"
+    if [ -n "${POST_APPLIANCE_HOOK}" ] && [ -x "${POST_APPLIANCE_HOOK}" ]; then
+        echo "Running post-appliance hook: ${POST_APPLIANCE_HOOK}"
+        "${POST_APPLIANCE_HOOK}"
+    fi
+
     # Attach the diskimage to nodes
     attach_appliance_diskimage master $NUM_MASTERS
     attach_appliance_diskimage worker $NUM_WORKERS
