@@ -381,7 +381,7 @@ echo "${PROVISIONING_HOST_EXTERNAL_IP} ${LOCAL_REGISTRY_DNS_NAME}" | sudo tee -a
 # api.CLUSTER_DOMAIN resolves to the bridge IP regardless of DNS/VRF context.
 if [ -n "${OPENPE_BRIDGE_IP:-}" ]; then
   sudo sed -i "/api.${CLUSTER_DOMAIN}/d" /etc/hosts
-  echo "${OPENPE_BRIDGE_IP} api.${CLUSTER_DOMAIN}" | sudo tee -a /etc/hosts
+  echo "192.168.110.10 api.${CLUSTER_DOMAIN}" | sudo tee -a /etc/hosts
 fi
 
 if use_registry "podman"; then
