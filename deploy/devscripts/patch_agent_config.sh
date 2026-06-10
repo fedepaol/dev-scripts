@@ -36,11 +36,17 @@ NIC_NAME="enp2s0"
 PROV_NIC_NAME="enp1s0"
 EXTRA_NIC_NAME="enp3s0"
 
-# DNS server: the host's baremetal IP where dnsmasq runs with cluster records
+# Extra NIC subnet (from EXTERNAL_NETWORK_SUBNET_V4 in config)
+EXTRA_NIC_SUBNET="${EXTERNAL_NETWORK_SUBNET_V4:-192.168.150.0/24}"
+EXTRA_NIC_BASE="${EXTRA_NIC_SUBNET%.*}"
+EXTRA_NIC_PREFIX="${EXTRA_NIC_SUBNET#*/}"
+EXTRA_NIC_START_OCTET="20"
+
+# DNS server: dnsmasq in VRF red, reachable over EVPN via br0
 DNS_SERVER="${DNS_SERVER:-192.168.111.1}"
 
 # NTP server reachable during agent discovery phase (host's baremetal IP)
-NTP_SERVER="${NTP_SERVER:-192.168.111.1}"
+NTP_SERVER="${NTP_SERVER:-10.100.0.1}"
 
 if [ ! -f "${AGENT_CONFIG}" ]; then
   echo "ERROR: ${AGENT_CONFIG} not found. Run agent/05_agent_configure.sh first."
@@ -68,10 +74,14 @@ if num_hosts == 0:
 bridge_base = '${FIRST_BRIDGE_IP%.*}'
 bridge_start_octet = ${FIRST_OCTET}
 
+extra_nic_base = '${EXTRA_NIC_BASE}'
+extra_nic_start_octet = ${EXTRA_NIC_START_OCTET}
+
 cfg['additionalNTPSources'] = ['${NTP_SERVER}']
 
 for i, host in enumerate(cfg['hosts']):
     bridge_ip = f'{bridge_base}.{bridge_start_octet + i}'
+    extra_nic_ip = f'{extra_nic_base}.{extra_nic_start_octet + i}'
 
     # Set rendezvousIP to the first node's bridge IP
     if i == 0:
@@ -94,7 +104,7 @@ for i, host in enumerate(cfg['hosts']):
         print(f'ERROR: Could not extract NIC IP for host {i}', file=sys.stderr)
         sys.exit(1)
 
-    print(f'  Host {i}: MAC={mac}  NIC_IP={nic_ip}  Bridge_IP={bridge_ip}')
+    print(f'  Host {i}: MAC={mac}  NIC_IP={nic_ip}  Bridge_IP={bridge_ip}  Extra_NIC_IP={extra_nic_ip}')
 
     host['networkConfig'] = {
         'interfaces': [
@@ -120,7 +130,11 @@ for i, host in enumerate(cfg['hosts']):
                 'name': '${EXTRA_NIC_NAME}',
                 'type': 'ethernet',
                 'state': 'up',
-                'ipv4': {'enabled': False},
+                'ipv4': {
+                    'enabled': True,
+                    'address': [{'ip': extra_nic_ip, 'prefix-length': ${EXTRA_NIC_PREFIX}}],
+                    'dhcp': False,
+                },
                 'ipv6': {'enabled': False},
             },
             {
@@ -155,6 +169,11 @@ for i, host in enumerate(cfg['hosts']):
                     'destination': '0.0.0.0/0',
                     'next-hop-address': '${BRIDGE_GW}',
                     'next-hop-interface': '${BRIDGE_NAME}',
+                    'table-id': 254,
+                },
+                {
+                    'destination': '${EXTRA_NIC_SUBNET}',
+                    'next-hop-interface': '${EXTRA_NIC_NAME}',
                     'table-id': 254,
                 },
             ],
