@@ -23,7 +23,7 @@ SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ $# -gt 0 ]]; then
     NODE_IPS=("$@")
 else
-    NODE_IPS=("192.168.111.80" "192.168.111.81" "192.168.111.82")
+    NODE_IPS=("192.168.111.80" "192.168.111.81" "192.168.111.82" "192.168.111.83" "192.168.111.84")
 fi
 LOCAL_IP="${LOCAL_IP:-192.168.150.1}"
 LOCAL_ASN="${LOCAL_ASN:-64512}"
@@ -276,6 +276,32 @@ DNSEOF
 else
     echo "Skipping DNS server (set API_VIP and INGRESS_VIP to enable)."
 fi
+
+# --- NTP server in VRF red ---
+CHRONY_CONF="${FRR_CONF_DIR}/chrony-vrf.conf"
+CHRONY_PID="/run/chronyd-vrf.pid"
+
+echo "Setting up NTP server in VRF ${VRF_NAME} on ${DNS_LISTEN_IP}..."
+
+for pid in $(pgrep -f "chronyd.*chrony-vrf" 2>/dev/null); do
+    echo "  Killing existing chronyd (PID ${pid})..."
+    sudo kill "${pid}" 2>/dev/null || true
+done
+sudo rm -f "${CHRONY_PID}"
+sleep 1
+
+cat > "${CHRONY_CONF}" <<NTPEOF
+local stratum 3 orphan
+allow all
+bindaddress ${DNS_LISTEN_IP}
+port 123
+driftfile /var/run/chrony-vrf.drift
+pidfile ${CHRONY_PID}
+NTPEOF
+
+sudo ip vrf exec "${VRF_NAME}" chronyd -f "${CHRONY_CONF}" -x
+
+echo "NTP server running at ${DNS_LISTEN_IP} in VRF ${VRF_NAME}."
 
 echo ""
 echo "FRR is running. Useful commands:"
