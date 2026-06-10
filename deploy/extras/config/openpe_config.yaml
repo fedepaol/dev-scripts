@@ -14,8 +14,9 @@ l2vnis:
         name: br0
 underlays:
   - asn: 64514
-    evpn:
-      vtepcidr: 100.65.0.0/24
+    tunnelEndpoint:
+      cidrs:
+        - 100.65.0.0/24
     nics:
       - enp2s0
     neighbors:
