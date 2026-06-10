@@ -86,8 +86,8 @@ if [[ -d "${EXTRASDIR}/quadlets" ]]; then
     # Stage all source files into the butane files-dir
     for f in controllerpod.pod controller.container routerpod.pod frr.container \
              reloader.container frr-sockets.volume openperouter-node-index.sh \
-             openperouter-raw-config.sh patch-installer-config.sh \
-             openperouter-node-index.service openperouter-raw-config.service \
+             patch-installer-config.sh \
+             openperouter-node-index.service \
              enable-virtual-interfaces.service; do
         cp "${EXTRASDIR}/quadlets/${f}" "${staging}/"
     done
@@ -105,7 +105,7 @@ if [[ -d "${EXTRASDIR}/quadlets" ]]; then
     done
 
     # Scripts -> /usr/local/bin/ (executable)
-    for f in openperouter-node-index.sh openperouter-raw-config.sh patch-installer-config.sh; do
+    for f in openperouter-node-index.sh patch-installer-config.sh; do
         bu_files+="    - path: /usr/local/bin/${f}
       mode: 0755
       overwrite: true
@@ -123,7 +123,7 @@ if [[ -d "${EXTRASDIR}/quadlets" ]]; then
 "
 
     # Systemd units (using contents_local so butane reads from files-dir)
-    for f in openperouter-node-index.service openperouter-raw-config.service \
+    for f in openperouter-node-index.service \
              enable-virtual-interfaces.service; do
         bu_units+="    - name: ${f}
       enabled: true
@@ -158,6 +158,13 @@ else
     {
         echo "variant: fcos"
         echo "version: 1.5.0"
+        if [[ -n "${SSH_PUB_KEY:-}" ]]; then
+            echo "passwd:"
+            echo "  users:"
+            echo "    - name: core"
+            echo "      ssh_authorized_keys:"
+            echo "        - \"${SSH_PUB_KEY}\""
+        fi
         if [[ -n "${bu_files}" ]]; then
             echo "storage:"
             echo "  files:"
@@ -186,6 +193,10 @@ else
         if ($new.systemd.units // [] | length) > 0 then
             .systemd = (.systemd // {}) |
             .systemd.units = ((.systemd.units // []) + ($new.systemd.units // []))
+        else . end |
+        if ($new.passwd.users // [] | length) > 0 then
+            .passwd = (.passwd // {}) |
+            .passwd.users = ((.passwd.users // []) + ($new.passwd.users // []))
         else . end
     ' "${tmpdir}/original.ign" "${tmpdir}/additions.ign" > "${tmpdir}/merged.ign"
 
