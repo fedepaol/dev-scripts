@@ -1,6 +1,6 @@
 #!/bin/bash
 # patch_appliance.sh - Patch an existing appliance ISO by embedding
-# OpenPERouter quadlets, configs, registry mirrors, DNS overrides,
+# OpenPERouter quadlets, configs, registry mirrors,
 # and the ignition hack agent into it.
 #
 # Usage: patch_appliance.sh <appliance_iso> <ocp_dir>
@@ -130,25 +130,6 @@ if [[ -d "${EXTRASDIR}/quadlets" ]]; then
       contents_local: ${f}
 "
     done
-fi
-
-# DNS config files from dns.bu
-if [[ -f "${EXTRASDIR}/dns/dns.bu" ]]; then
-    while IFS=$'\t' read -r fpath contents; do
-        local_file="$(basename "${fpath}")"
-        printf '%b\n' "${contents}" > "${staging}/${local_file}"
-        bu_files+="    - path: ${fpath}
-      mode: 0644
-      overwrite: true
-      contents:
-        local: ${local_file}
-"
-    done < <(yq -r '.storage.files[] | [.path, .contents.inline] | @tsv' "${EXTRASDIR}/dns/dns.bu")
-
-    bu_units+="    - name: on-prem-resolv-prepender.service
-      mask: true
-      enabled: false
-"
 fi
 
 # --- Assemble and compile butane ---
