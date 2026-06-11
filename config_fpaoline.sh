@@ -21,11 +21,9 @@ export CLUSTER_NAME="sno-lab"
 export BASE_DOMAIN="example.com"
 
 # --- AGENT-BASED INSTALLER ---
-export AGENT_E2E_TEST_SCENARIO="COMPACT_IPV4"
+export AGENT_E2E_TEST_SCENARIO="HA_IPV4"
 export AGENT_E2E_TEST_BOOT_MODE="APPLIANCE_ISO"
-export OPENSHIFT_VERSION=4.20.16
-export OPENSHIFT_RELEASE_STREAM=4.20
-export OPENSHIFT_RELEASE_TYPE="ga"
+export OPENSHIFT_RELEASE_IMAGE="registry.build10.ci.openshift.org/ci-ln-jh8x35b/release:latest"
 
 # --- NETWORKING ---
 export IP_STACK="v4"
@@ -38,8 +36,10 @@ export OVN_LOCAL_GATEWAY_MODE=true
 export EXTRA_NETWORK_NAMES="external"
 export EXTERNAL_NETWORK_SUBNET_V4='192.168.150.0/24'
 
+# --- NODES ---
+# NUM_WORKERS is set by HA scenario (default: 2)
+
 # --- VM RESOURCES ---
-# Explicit values matching the COMPACT_IPV4 preset to document intent
 export MASTER_MEMORY=32768
 export MASTER_VCPU=8
 export MASTER_DISK=100
@@ -58,10 +58,13 @@ export IGNITION_EXTRA="${PWD}/ignition-password.ign"
 # Resolve api.CLUSTER_DOMAIN to the bridge IP so it's reachable from VRF context
 export OPENPE_BRIDGE_IP="192.168.110.2"
 
+# --- CUSTOM KERNEL (pre-built appliance ISO with patched kernel) ---
+export APPLIANCE_ISO_PATH="${PWD}/deploy/appliance/appliance.iso"
+
 # --- OPENPEROUTER ---
 # Pre-load OpenPERouter container images into the appliance disk
 #export APPLIANCE_ADDITIONAL_IMAGES="quay.io/openperouter/router:main"
-export APPLIANCE_ADDITIONAL_IMAGES="quay.io/fpaoline/router:dev4,quay.io/mavazque/ign-converter:latest"
+export APPLIANCE_ADDITIONAL_IMAGES="quay.io/redhat-user-workloads/telco-5g-tenant/openperouter-operator-edge-4-22:latest,quay.io/mavazque/ign-converter:latest"
 # OpenPERouter quadlets and configs are embedded directly in the appliance
 # ISO ignition, so no extra MachineConfig manifests are needed.
 # ENABLE_VIRTUAL_INTERFACES is injected via a systemd unit in the ISO.
