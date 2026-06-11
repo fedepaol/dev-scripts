@@ -109,6 +109,27 @@ for i, host in enumerate(cfg['hosts']):
     host['networkConfig'] = {
         'interfaces': [
             {
+                'name': '${BRIDGE_NAME}',
+                'type': 'linux-bridge',
+                'state': 'up',
+                'ipv4': {
+                    'enabled': True,
+                    'auto-dns': False,
+                    'address': [{'ip': bridge_ip, 'prefix-length': ${BRIDGE_PREFIX}}],
+                    'dhcp': False,
+                },
+                'bridge': {
+                    'port': [{'name': 'dummy0'}],
+                },
+            },
+            {
+                'name': 'dummy0',
+                'type': 'dummy',
+                'state': 'up',
+                'ipv4': {'enabled': False},
+                'ipv6': {'enabled': False},
+            },
+            {
                 'name': '${NIC_NAME}',
                 'type': 'ethernet',
                 'state': 'up',
@@ -136,26 +157,6 @@ for i, host in enumerate(cfg['hosts']):
                     'dhcp': False,
                 },
                 'ipv6': {'enabled': False},
-            },
-            {
-                'name': 'dummy0',
-                'type': 'dummy',
-                'state': 'up',
-                'ipv4': {'enabled': False},
-                'ipv6': {'enabled': False},
-            },
-            {
-                'name': '${BRIDGE_NAME}',
-                'type': 'linux-bridge',
-                'state': 'up',
-                'ipv4': {
-                    'enabled': True,
-                    'address': [{'ip': bridge_ip, 'prefix-length': ${BRIDGE_PREFIX}}],
-                    'dhcp': False,
-                },
-                'bridge': {
-                    'port': [{'name': 'dummy0'}],
-                },
             },
         ],
         'dns-resolver': {
