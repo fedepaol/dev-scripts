@@ -1,6 +1,6 @@
 #!/bin/bash
 # generate_machineconfigs.sh - Compile MachineConfig manifests from
-# butane sources (openperouter, dns, registry).
+# butane sources (openperouter, registry).
 #
 # Usage: generate_machineconfigs.sh <output_dir>
 #
@@ -29,16 +29,22 @@ if [[ -f "${SCRIPTDIR}/openperouter.bu" ]]; then
         -o "${output_dir}/99-master-openperouter.yaml"
 fi
 
-if [[ -f "${EXTRASDIR}/dns/dns.bu" ]]; then
-    echo "  dns/dns.bu -> 02-master-dns-hack.yaml"
-    butane --files-dir="${EXTRASDIR}" "${EXTRASDIR}/dns/dns.bu" \
-        -o "${output_dir}/02-master-dns-hack.yaml"
+if [[ -f "${SCRIPTDIR}/openperouter-worker.bu" ]]; then
+    echo "  openperouter-worker.bu -> 99-worker-openperouter.yaml"
+    butane --files-dir="${EXTRASDIR}" "${SCRIPTDIR}/openperouter-worker.bu" \
+        -o "${output_dir}/99-worker-openperouter.yaml"
 fi
 
 if [[ -f "${SCRIPTDIR}/registry.bu" ]]; then
     echo "  registry.bu -> 01-master-registry.yaml"
     butane --files-dir="${EXTRASDIR}" "${SCRIPTDIR}/registry.bu" \
         -o "${output_dir}/01-master-registry.yaml"
+fi
+
+if [[ -f "${SCRIPTDIR}/registry-worker.bu" ]]; then
+    echo "  registry-worker.bu -> 01-worker-registry.yaml"
+    butane --files-dir="${EXTRASDIR}" "${SCRIPTDIR}/registry-worker.bu" \
+        -o "${output_dir}/01-worker-registry.yaml"
 fi
 
 echo "==> MachineConfig manifests generated."
