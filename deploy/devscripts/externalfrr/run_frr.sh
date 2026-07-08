@@ -44,6 +44,7 @@ BASE_DOMAIN="${BASE_DOMAIN:-example.com}"
 CLUSTER_DOMAIN="${CLUSTER_NAME}.${BASE_DOMAIN}"
 API_VIP="${API_VIP:-192.168.110.10}"
 INGRESS_VIP="${INGRESS_VIP:-192.168.110.11}"
+BM_IF="${CLUSTER_NAME}bm"
 CONTAINER_NAME="externalfrr"
 FRR_IMAGE="${FRR_IMAGE:-quay.io/frrouting/frr:10.5.1}"
 FRR_CONF_DIR="${SCRIPTDIR}/config"
@@ -84,6 +85,11 @@ else
     # Allow all traffic in the VRF (DNS, etc.) by placing it in the trusted firewall zone
     sudo firewall-cmd --zone=trusted --add-interface="${VRF_NAME}" 2>/dev/null || true
 fi
+
+# --- Firewall: trust the baremetal bridge so incoming VXLAN (UDP 4789) is not blocked ---
+# sno-labbm lands in the libvirt zone by default which drops UDP 4789 return packets.
+echo "Trusting baremetal interface ${BM_IF} for VXLAN traffic..."
+sudo firewall-cmd --zone=trusted --change-interface="${BM_IF}" 2>/dev/null || true
 
 # --- VXLAN interface ---
 echo "Creating VXLAN interface ${VXLAN_IF} (VNI ${VNI})..."
