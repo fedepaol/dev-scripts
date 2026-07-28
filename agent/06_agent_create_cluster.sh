@@ -361,11 +361,12 @@ function enable_assisted_service_ui() {
 
 function wait_for_cluster_ready() {
   local openshift_install="$(realpath "${OCP_DIR}/openshift-install")"
+  local ip="$(which ip)"
   local dir="${OCP_DIR}"
   if [[ "${AGENT_USE_APPLIANCE_MODEL}" == true || "${AGENT_E2E_TEST_BOOT_MODE}" == "DISKIMAGE" || "${AGENT_E2E_TEST_BOOT_MODE}" == "APPLIANCE_ISO" ]]; then
      dir="${config_image_dir}"
   fi
-  if ! "${openshift_install}" --dir="${dir}" --log-level=debug agent wait-for bootstrap-complete; then
+  if ! "${ip}" vrf exec red "${openshift_install}" --dir="${dir}" --log-level=debug agent wait-for bootstrap-complete; then
       exit 1
   fi
 
@@ -375,7 +376,7 @@ function wait_for_cluster_ready() {
   fi
 
   echo "Waiting for cluster ready... "
-  "${openshift_install}" --dir="${dir}" --log-level=debug agent wait-for install-complete 2>&1 | grep --line-buffered -v 'password'
+  "${ip}" vrf exec red "${openshift_install}" --dir="${dir}" --log-level=debug agent wait-for install-complete 2>&1 | grep --line-buffered -v 'password'
   if [ ${PIPESTATUS[0]} != 0 ]; then
       exit 1
   fi
@@ -734,8 +735,8 @@ case "${AGENT_E2E_TEST_BOOT_MODE}" in
         # Embed OpenPERouter quadlets, configs, registry mirrors, and SSH key
         # into the appliance ISO ignition (first-boot customization).
         _openpe_variant="${OPENPE_VARIANT:-srv6raw}"
-        if [[ -x "${SCRIPTDIR}/deploy/openperouterday0openshift/${_openpe_variant}/appliance/patch_appliance.sh" ]]; then
-            "${SCRIPTDIR}/deploy/openperouterday0openshift/${_openpe_variant}/appliance/patch_appliance.sh" "${appliance_iso}" "${OCP_DIR}"
+        if [[ -x "${PATCH_APPLIANCE_PATH}" ]]; then
+            "${PATCH_APPLIANCE_PATH}" "${appliance_iso}" "${OCP_DIR}"
         fi
     fi
 

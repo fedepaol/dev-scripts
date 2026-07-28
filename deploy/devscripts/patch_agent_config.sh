@@ -18,7 +18,8 @@ set -euxo pipefail
 #
 # If first_bridge_ip is not specified, defaults to 192.168.110.2
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "${DIR}/../../common.sh"
 
 FIRST_BRIDGE_IP="${1:-192.168.110.2}"
 BRIDGE_PREFIX="24"
@@ -32,10 +33,11 @@ BRIDGE_V6_GW="fd00:110::1"
 
 NIC_PREFIX="24"
 
-WORKING_DIR="${WORKING_DIR:-/opt/dev-scripts}"
 CLUSTER_NAME="${CLUSTER_NAME:-ostest}"
-AGENT_CONFIG="${WORKING_DIR}/ocp/${CLUSTER_NAME}/agent-config.yaml"
-INSTALL_CONFIG="${WORKING_DIR}/ocp/${CLUSTER_NAME}/install-config.yaml"
+INSTALL_CONFIG_PATH="${OCP_DIR}"
+INSTALL_PATH="${SCRIPTDIR}/${INSTALL_CONFIG_PATH}"
+AGENT_CONFIG="${INSTALL_PATH}/agent-config.yaml"
+INSTALL_CONFIG="${INSTALL_PATH}/install-config.yaml"
 
 NIC_NAME="enp2s0"
 PROV_NIC_NAME="enp1s0"

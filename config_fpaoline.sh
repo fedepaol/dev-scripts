@@ -59,9 +59,17 @@ export IGNITION_EXTRA="${PWD}/ignition-password.ign"
 # Resolve api.CLUSTER_DOMAIN to the bridge IP so it's reachable from VRF context
 export OPENPE_BRIDGE_IP="192.168.110.2"
 
+export OPENPEROUTER_DAY0_OPENSHIFT="${PWD}/deploy/openperouterday0openshift/${OPENPE_VARIANT:-srv6raw}"
+
+# --- PATCH_APPLIANCE_PATH ---
+export PATCH_APPLIANCE_PATH="${OPENPEROUTER_DAY0_OPENSHIFT}/appliance/patch_appliance.sh"
+
+# --- CONFIG_IMAGE_DIR must hold the location of the configimage ---
+export CONFIG_IMAGE_DIR="${OPENPEROUTER_DAY0_OPENSHIFT}/configimage"
+
 # --- CUSTOM KERNEL (pre-built appliance ISO with patched kernel) ---
 # This ISO must be the output of prepare_appliance.sh (fully patched)
-export APPLIANCE_ISO_PATH="${PWD}/deploy/openperouterday0openshift/${OPENPE_VARIANT:-srv6raw}/appliance/appliance.iso"
+export APPLIANCE_ISO_PATH="${OPENPEROUTER_DAY0_OPENSHIFT}/appliance/appliance.iso"
 
 # --- OPENPEROUTER (rawconfig mode: ISIS + SRv6) ---
 export USE_RAW=1
@@ -71,3 +79,4 @@ export APPLIANCE_ADDITIONAL_IMAGES="quay.io/fpaoline/openperouter:latestfix1,qua
 # OpenPERouter quadlets and configs are embedded directly in the appliance
 # ISO ignition, so no extra MachineConfig manifests are needed.
 # ENABLE_VIRTUAL_INTERFACES is injected via a systemd unit in the ISO.
+
